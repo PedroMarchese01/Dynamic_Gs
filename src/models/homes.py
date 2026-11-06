@@ -1,17 +1,19 @@
 
-import threading
 from random import randint
 
 
 class Home:
-    def __init__(self):
-        self.electricity_consumption = 0
-        self.total_electricity_consumption = 0
 
-        self.consumption_is_defined = False
+    def __init__(self, battery=None):
 
-        self.stop_event = threading.Event()
-        self.consumption_thread = None
+        self.base_consumption = 3.0
+        self.electricity_consumption = 3.0
+
+        self.energy_received = 0.0
+        self.total_electricity_consumption = 0.0
+
+        self.energy_demand = 0.0
+        self.is_attended = False
 
     def get_electricity_consumption(self):
         return self.electricity_consumption
@@ -19,47 +21,37 @@ class Home:
     def get_total_electricity_consumption(self):
         return self.total_electricity_consumption
 
-    def set_electricity_consumption(self, consumption: float):
+    def set_electricity_consumption(self, consumption):
+
+        if consumption < 0:
+            raise ValueError("Consumo inválido")
+
+        self.base_consumption = consumption
         self.electricity_consumption = consumption
-        self.consumption_is_defined = True
-        return True
 
-    def consume_electricity(self):
-        interval_counter = 5
-        electricity_usage = 0
+    def update_consumption(self):
 
-        while not self.stop_event.is_set():
+        variation = randint(-30, 30) / 100
 
-            if interval_counter == 5 and not self.consumption_is_defined:
-                interval_counter = 0
-                electricity_usage = randint(0, 5)
-
-            self.total_electricity_consumption += electricity_usage
-
-            #=================
-
-            # lógica do gerador
-
-            #=================
-
-            interval_counter += 1
-
-            self.stop_event.wait(1)
-
-    def start_consumption(self):
-        if self.consumption_thread and self.consumption_thread.is_alive():
-            return
-
-        self.stop_event.clear()
-
-        self.consumption_thread = threading.Thread(
-            target=self.consume_electricity
+        self.electricity_consumption = (
+            self.base_consumption * (1 + variation)
         )
 
-        self.consumption_thread.start()
+    def get_energy_demand(self, interval_seconds=1):
 
-    def stop_consumption(self):
-        self.stop_event.set()
+        self.energy_demand = (
+            self.electricity_consumption
+            * interval_seconds / 3600
+        )
 
-        if self.consumption_thread and self.consumption_thread.is_alive():
-            self.consumption_thread.join()
+        return self.energy_demand
+
+    def set_energy_received(self, amount):
+
+        self.energy_received = amount
+
+        self.total_electricity_consumption += amount
+
+        self.is_attended = (
+            amount >= self.energy_demand - 0.0000001
+        )
