@@ -1,53 +1,33 @@
-from time import sleep
+from src.factory.village_factory import VillageFac
+import networkx as nx
+import matplotlib.pyplot as plt
 
-from src.models.battery_bank import BaterryBank
-from src.models.solar_painel import SolarPainel
+# Criar vila
+village = VillageFac()
+village.append_number_of_home(10)
 
+# Gerar grafo
+graph = village.generate_graph()
 
-def main():
-    # Criando banco com 10 pilhas de 50 Wh
-    battery_bank = BaterryBank()
+# Converter casas em IDs numéricos
+homes = list(graph.nodes())
+home_ids = {home: f"Casa {i+1}" for i, home in enumerate(homes)}
 
-    battery_bank.append_battery(10)
+# Criar layout visual
+pos = nx.spring_layout(graph, seed=42, k=0.8)
 
-    # Criando painel solar com luminosidade inicial de 80%
-    solar_panel = SolarPainel(battery_bank, 80)
+# Desenhar grafo
+plt.figure(figsize=(10, 8))
 
-    print("=== SIMULAÇÃO SOLAR ===")
-    print(f"Quantidade de pilhas: {len(battery_bank.power)}")
-    print(f"Carga inicial: {battery_bank.get_batteries_level()}%")
-
-    # Iniciando captação
-    solar_panel.turn_on()
-
-    try:
-        for second in range(1, 31):
-            sleep(1)
-
-            # Simulando consumo após 10 segundos
-            if second == 10:
-                print("\n[CONSUMO] Casa consumindo 5% do banco")
-                battery_bank.discharge(5)
-
-            # Alterando luminosidade após 15 segundos
-            if second == 15:
-                print("\n[CLIMA] Luminosidade reduzida para 40%")
-                solar_panel.light_change(40)
-
-            # Exibindo informações
-            print(
-                f"Segundo: {second:02d} | "
-                f"Luminosidade: {solar_panel.light}% | "
-                f"Carga média: {battery_bank.get_batteries_level():.4f}%"
-            )
-
-    finally:
-        solar_panel.turn_off()
-
-    print("\n=== RESULTADO FINAL ===")
-    print(f"Carga final: {battery_bank.get_batteries_level():.4f}%")
-    print("Simulação encerrada.")
-
-
-if __name__ == "__main__":
-    main()
+nx.draw_networkx(
+    graph,
+    pos,
+    labels=home_ids,
+    with_labels=True,
+    node_color="skyblue",
+    node_size=1800,
+    font_size=10,
+    font_weight="bold",
+    edge_color="gray",
+    width=2
+)
