@@ -2,17 +2,17 @@
 from time import time
 from threading import Thread, Event
 
-from src.models.battery_bank import BaterryBank
+from src.models.battery_bank import BatteryBank
 
 
-class SolarPainel:
+class SolarPanel:
 
     MAX_POWER = 550
     EFFICIENCY = 0.90
 
     def __init__(
         self,
-        battery_bank: BaterryBank,
+        battery_bank: BatteryBank,
         percent_initial_lighting
     ):
 

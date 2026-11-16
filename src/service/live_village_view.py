@@ -1,4 +1,3 @@
-
 import matplotlib.pyplot as plt
 import networkx as nx
 
@@ -116,18 +115,8 @@ class LiveVillageView:
                 False
             )
 
-            received = getattr(
-                node,
-                "energy_received",
-                0
-            )
-
             if attended:
                 colors.append("#2ecc71")
-
-            elif received > 0:
-                colors.append("#f1c40f")
-
             else:
                 colors.append("#e74c3c")
 
@@ -203,10 +192,6 @@ class LiveVillageView:
 
             if home.is_attended:
                 status = "OK"
-
-            elif received > 0:
-                status = "PARCIAL"
-
             else:
                 status = "SEM ENERGIA"
 
