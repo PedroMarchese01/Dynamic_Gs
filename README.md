@@ -1,12 +1,22 @@
-# Dynnamic_GS
+# Dynamic_GS
 
 ## Global Solution — CitizenTech
 
 **Distribuição inteligente de energia para comunidades ribeirinhas utilizando grafos.**
 
+## Integrantes
+
+| Nome | RM |
+|---|---:|
+| Augusto Valerio | 562185 |
+| Pedro Marchese | 563339 |
+| Mariana Oliveira | 564241 |
+| Jonas Esteves | 564143 |
+| Vitor Tigre | 561746 |
+
 ## Sobre o projeto
 
-O Dynnamic_GS surgiu de uma preocupação com a realidade de comunidades ribeirinhas da Amazônia, onde o acesso à energia elétrica ainda pode ser limitado e manter um fornecimento constante é um grande desafio.
+O Dynamic_GS surgiu de uma preocupação com a realidade de comunidades ribeirinhas da Amazônia, onde o acesso à energia elétrica ainda pode ser limitado e manter um fornecimento constante é um grande desafio.
 
 A nossa proposta é explorar como a tecnologia pode ajudar nesse cenário, criando uma simulação de uma comunidade que utiliza energia solar e baterias para abastecer suas residências.
 
@@ -20,18 +30,18 @@ Com essa estrutura, conseguimos trabalhar com diferentes situações de consumo,
 
 Imagine uma comunidade com 30 residências e uma quantidade limitada de energia armazenada. Como decidir quais casas receberão energia? Como aproveitar melhor as conexões existentes? E como evitar que parte da comunidade fique sem atendimento?
 
-Essas são algumas das questões que buscamos trabalhar no Dynnamic_GS.
+Essas são algumas das questões que buscamos trabalhar no Dynamic_GS.
 
 Nosso principal objetivo é **distribuir a energia disponível de forma inteligente, buscando atender ao maior número possível de residências**.
 
 Para isso, consideramos:
 
-- A demanda energética individual de cada casa.
-- A quantidade de energia disponível nas baterias.
-- Os caminhos existentes entre a fonte e as residências.
-- A capacidade de transmissão de cada conexão.
-- A quantidade de residências que conseguem receber energia.
-- As mudanças no consumo e na geração durante a simulação.
+- a demanda energética individual de cada casa;
+- a quantidade de energia disponível nas baterias;
+- os caminhos existentes entre a fonte e as residências;
+- a capacidade de transmissão de cada conexão;
+- a quantidade de residências que conseguem receber energia;
+- as mudanças no consumo e na geração durante a simulação.
 
 A ideia é entender como diferentes configurações da rede e estratégias de distribuição podem melhorar o atendimento da comunidade, principalmente durante períodos sem geração solar.
 
@@ -48,9 +58,27 @@ O funcionamento pode ser dividido em quatro etapas:
 
 Essas etapas trabalham em conjunto. Enquanto o painel produz energia, as residências continuam consumindo, e o sistema precisa administrar o que está disponível.
 
+## Técnica escolhida
+
+A técnica escolhida para a Global Solution foi a utilização de **grafos**.
+
+O grafo representa a infraestrutura de distribuição da comunidade:
+
+- as residências são representadas por vértices;
+- a fonte de energia é representada pelo vértice `ENERGY_SOURCE`;
+- as conexões elétricas são representadas por arestas;
+- cada aresta possui uma capacidade de transmissão;
+- os caminhos indicam como a energia pode chegar até cada residência.
+
+Além do grafo, o projeto utiliza uma estratégia gulosa de priorização. Antes da distribuição, as residências são ordenadas pela demanda energética, da menor para a maior.
+
+Essa estratégia busca atender primeiro as casas que precisam de menos energia, aumentando a possibilidade de atender uma quantidade maior de residências quando a energia disponível é limitada.
+
+A estratégia não garante uma solução globalmente ótima para todas as configurações possíveis de rede, mas oferece uma abordagem coerente e eficiente para a simulação proposta.
+
 ## A importância dos grafos
 
-O grafo é a parte central do Dynnamic_GS. É por meio dele que representamos a infraestrutura da comunidade e analisamos como a energia pode chegar até cada residência.
+O grafo é a parte central do Dynamic_GS. É por meio dele que representamos a infraestrutura da comunidade e analisamos como a energia pode chegar até cada residência.
 
 Utilizamos a biblioteca NetworkX para criar e manipular essa estrutura.
 
@@ -60,8 +88,8 @@ Os vértices representam os pontos da rede.
 
 No nosso projeto, temos:
 
-- Um vértice especial chamado `ENERGY_SOURCE`, que representa a fonte de energia.
-- Os vértices das residências, que representam as casas da comunidade.
+- um vértice especial chamado `ENERGY_SOURCE`, que representa a fonte de energia;
+- os vértices das residências, que representam as casas da comunidade.
 
 Cada residência também possui informações próprias, como sua demanda energética e a quantidade de energia recebida.
 
@@ -71,15 +99,21 @@ As arestas representam as conexões entre os pontos da rede.
 
 Elas determinam como as residências estão interligadas e quais caminhos podem ser utilizados para transportar energia.
 
-Cada conexão pode possuir uma capacidade de transmissão, que limita a quantidade de energia que consegue passar por ela.
+Cada conexão possui uma capacidade de transmissão, que limita a quantidade de energia que consegue passar por ela em cada intervalo da simulação.
 
 ### Caminhos
 
 Para que uma residência receba energia, precisa existir um caminho entre a fonte e o seu vértice.
 
-O sistema utiliza a busca de caminhos do NetworkX para encontrar rotas disponíveis na rede.
+O sistema utiliza `networkx.shortest_path()` para procurar um caminho entre a fonte e cada residência.
 
-Uma residência pode ter demanda e ainda assim não receber energia caso não exista um caminho adequado ou alguma conexão não tenha capacidade suficiente.
+Antes da busca, o sistema cria um grafo residual contendo somente as conexões que ainda possuem capacidade suficiente para transportar a demanda da residência analisada.
+
+Uma residência pode ter demanda e ainda assim não receber energia caso:
+
+- não exista um caminho disponível;
+- alguma conexão não possua capacidade suficiente;
+- o banco de baterias não possua energia suficiente.
 
 ### Capacidade das conexões
 
@@ -91,16 +125,52 @@ Como a demanda das residências é calculada em watt-hora (Wh), o sistema conver
 capacity_wh = capacity_w * interval_seconds / 3600
 ```
 
-Por exemplo, uma conexão com capacidade de 1000 W consegue transmitir até aproximadamente 0,277 Wh em um intervalo de um segundo.
+Por exemplo, uma conexão com capacidade de 1000 W consegue transmitir aproximadamente `0,277 Wh` em um intervalo de um segundo.
 
-Isso permite comparar a capacidade de transmissão com a demanda energética de cada residência.
+Isso permite comparar a capacidade de transmissão da conexão com a demanda energética de cada residência no mesmo intervalo.
+
+## Noção de eficiência
+
+Considere:
+
+- `V`: quantidade de vértices;
+- `E`: quantidade de arestas;
+- `H`: quantidade de residências.
+
+A ordenação das residências pela demanda possui complexidade aproximada de:
+
+```text
+O(H log H)
+```
+
+Para cada residência, o algoritmo reconstrói o grafo residual e procura um caminho utilizando a busca de menor caminho do NetworkX.
+
+Como o grafo não possui pesos, essa busca pode ser realizada de maneira equivalente a uma busca em largura, com complexidade aproximada de:
+
+```text
+O(V + E)
+```
+
+Como a operação é repetida para as residências, a complexidade aproximada de uma rodada de distribuição é:
+
+```text
+O(H × (V + E) + H log H)
+```
+
+A memória utilizada pelo grafo e pelas estruturas auxiliares é aproximadamente:
+
+```text
+O(V + E)
+```
+
+Para o cenário padrão de 30 residências, essa abordagem é suficiente para permitir a atualização da distribuição e da visualização durante a execução.
 
 ---
 
 ## Estrutura do projeto
 
 ```text
-Dynnamic_GS/
+Dynamic_Gs/
 │
 ├── src/
 │   │
@@ -110,15 +180,17 @@ Dynnamic_GS/
 │   │   ├── battery.py
 │   │   ├── battery_bank.py
 │   │   ├── homes.py
-│   │   └── solar_painel.py
+│   │   └── solar_panel.py
 │   │
 │   ├── factory/
+│   │   ├── graph_village_factory.py
 │   │   └── village_factory.py
 │   │
 │   └── service/
 │       ├── energy_distribution.py
 │       └── live_village_view.py
 │
+├── requirements.txt
 └── README.md
 ```
 
@@ -147,7 +219,7 @@ Principais funções:
 
 Essa classe é utilizada pelo banco de baterias, que reúne várias instâncias de `Battery`.
 
-#### BaterryBank — `battery_bank.py`
+#### BatteryBank — `battery_bank.py`
 
 Representa o conjunto de baterias utilizado para armazenar a energia da comunidade.
 
@@ -165,14 +237,14 @@ Principais funções:
 | `get_batteries_level()` | Calcula o percentual geral de carga do banco. |
 | `get_available_energy()` | Retorna a quantidade de energia disponível para distribuição. |
 
-A classe também utiliza `threading.RLock()` para proteger operações de leitura e alteração do armazenamento, evitando conflitos quando diferentes processos acessam o banco simultaneamente.
+A classe utiliza `threading.RLock()` para proteger operações de leitura e alteração do armazenamento. Isso evita conflitos quando a thread responsável pela geração solar e a execução principal acessam o banco de baterias simultaneamente.
 
 **Exemplo de utilização:**
 
 ```python
-from src.models.battery_bank import BaterryBank
+from src.models.battery_bank import BatteryBank
 
-battery_bank = BaterryBank()
+battery_bank = BatteryBank()
 
 # Adiciona 10 baterias de 50 Wh
 battery_bank.append_battery(10)
@@ -187,7 +259,7 @@ print(battery_bank.get_available_energy())
 print(battery_bank.get_batteries_level())
 ```
 
-#### Homes — `homes.py`
+#### Home — `homes.py`
 
 Representa cada residência da comunidade.
 
@@ -199,12 +271,14 @@ Principais funções:
 |---|---|
 | `get_energy_demand(interval_seconds)` | Calcula a demanda de energia da residência para determinado intervalo. |
 | `set_energy_received(amount)` | Registra a quantidade de energia recebida pela residência. |
+| `set_electricity_consumption(consumption)` | Define o consumo-base da residência. |
+| `update_consumption()` | Aplica uma variação ao consumo da residência. |
 
 Além desses métodos, os atributos da residência são utilizados para acompanhar informações como consumo, energia recebida e situação de atendimento.
 
 Essa separação permite que cada casa tenha seu próprio comportamento, em vez de todas compartilharem uma demanda fixa.
 
-#### SolarPainel — `solar_painel.py`
+#### SolarPanel — `solar_panel.py`
 
 Representa o painel responsável pela geração de energia solar.
 
@@ -221,7 +295,7 @@ Principais configurações:
 | `light` | Percentual de luminosidade disponível. |
 | `energy_target` | Banco de baterias que recebe a energia gerada. |
 | `running` | Indica se o processo de geração está ativo. |
-| `thread` | Referência à execução paralela da geração. |
+| `thread` | Referência à thread de geração. |
 
 Principais funções:
 
@@ -235,23 +309,25 @@ A utilização de uma thread permite que o painel continue gerando energia enqua
 
 ### 2. Factory
 
-#### VillageFac — `village_factory.py`
+#### VillageFactory — `village_factory.py`
 
 Responsável por construir a comunidade que será utilizada na simulação.
 
-Essa classe reúne as residências e organiza a estrutura de conexões que será utilizada pelo sistema de distribuição.
+Essa classe reúne as residências e organiza a estrutura de conexões utilizada pelo sistema de distribuição.
 
 Principais funções:
 
 | Método | O que faz |
 |---|---|
-| `generate_graph()` | Cria ou disponibiliza o grafo que representa a comunidade e suas conexões. |
+| `append_home(home)` | Adiciona uma residência à comunidade. |
+| `append_number_of_home(number_of_home)` | Cria a quantidade solicitada de residências. |
+| `generate_graph()` | Gera o grafo que representa a comunidade e suas conexões. |
 | `get_homes()` | Retorna as residências criadas. |
 | `update_consumptions()` | Atualiza os consumos das residências durante a simulação. |
 
 A quantidade de residências e a organização das conexões influenciam diretamente os resultados.
 
-É nessa etapa que definimos a estrutura da comunidade que será analisada pelo algoritmo de distribuição.
+O arquivo `graph_village_factory.py` cria uma estrutura inicialmente conectada e adiciona outras conexões aleatórias entre as residências.
 
 ### 3. Services
 
@@ -265,20 +341,18 @@ Ela recebe o banco de baterias e a comunidade, acessa o grafo e analisa as deman
 
 O processo de distribuição considera tanto a energia armazenada quanto os caminhos disponíveis na rede.
 
-Principais funções e responsabilidades:
+##### `__init__()`
 
-**`__init__()`**
+Inicializa o serviço de distribuição:
 
-Inicializa o serviço de distribuição.
+- recebe o banco de baterias e a comunidade;
+- obtém o grafo da comunidade;
+- define a capacidade padrão das conexões;
+- cria o vértice especial `ENERGY_SOURCE`;
+- conecta a fonte à primeira residência;
+- configura a capacidade das conexões.
 
-- Recebe o banco de baterias e a comunidade.
-- Obtém o grafo da comunidade.
-- Define a capacidade padrão das conexões.
-- Cria o vértice especial `ENERGY_SOURCE`.
-- Conecta a fonte à rede.
-- Inicializa o controle das residências atendidas anteriormente.
-
-**`distribute(interval_seconds=1)`**
+##### `distribute(interval_seconds=1)`
 
 Executa uma rodada de distribuição.
 
@@ -288,30 +362,31 @@ O processo acontece da seguinte maneira:
 2. Consulta a demanda energética de cada casa.
 3. Verifica a energia disponível no banco de baterias.
 4. Calcula a capacidade de transmissão das conexões para o intervalo analisado.
-5. Organiza as residências de acordo com a prioridade de atendimento.
-6. Procura caminhos disponíveis entre a fonte e cada residência.
-7. Verifica se existe energia suficiente para atender à demanda.
-8. Atualiza a energia recebida por cada casa.
-9. Desconta do banco a energia que foi distribuída.
-10. Retorna informações sobre o resultado da distribuição.
+5. Organiza as residências da menor para a maior demanda.
+6. Cria um grafo residual com as conexões disponíveis.
+7. Procura um caminho entre a fonte e cada residência.
+8. Verifica se existe energia e capacidade suficientes.
+9. Atualiza a energia recebida por cada casa.
+10. Desconta do banco a energia distribuída.
+11. Retorna as informações da rodada.
 
-O algoritmo também mantém o registro das residências que foram atendidas anteriormente, ajudando a preservar a prioridade entre as rodadas.
+A estratégia utilizada é de atendimento completo: uma residência recebe toda a sua demanda no intervalo ou permanece sem atendimento naquela rodada.
 
-**Como funciona a busca de caminhos?**
+##### Busca de caminhos
 
-O projeto utiliza `networkx.shortest_path()` para procurar um caminho entre a fonte de energia e uma residência.
+O projeto utiliza `networkx.shortest_path()` para procurar um caminho entre a fonte de energia e cada residência.
 
 Antes da busca, é construída uma estrutura auxiliar com as conexões que ainda possuem capacidade suficiente para atender à demanda analisada.
 
-Dessa forma, o algoritmo não considera apenas a distância entre os vértices, mas também a disponibilidade das conexões.
+Dessa forma, o algoritmo não considera apenas a quantidade de arestas do caminho, mas também a capacidade disponível nas conexões.
 
-**Informações retornadas pela distribuição:**
+##### Informações retornadas
 
 | Informação | Significado |
 |---|---|
 | `attended` | Quantidade de residências atendidas. |
 | `total_homes` | Total de residências da comunidade. |
-| `energy_delivered` | Energia total distribuída. |
+| `energy_delivered` | Energia total distribuída na rodada. |
 | `energy_remaining` | Energia restante no banco. |
 | `active_edges` | Conexões utilizadas na distribuição. |
 | `paths` | Caminhos utilizados para atender às residências. |
@@ -326,19 +401,18 @@ A classe recebe o grafo, as residências e a identificação da fonte de energia
 
 Principais responsabilidades:
 
-- Desenhar os vértices e as arestas.
-- Identificar visualmente a fonte de energia.
-- Diferenciar residências atendidas e não atendidas.
-- Destacar as conexões utilizadas na distribuição.
-- Atualizar as informações exibidas durante a execução.
-- Apresentar dados gerais sobre o atendimento da comunidade.
+- desenhar os vértices e as arestas;
+- identificar visualmente a fonte de energia;
+- diferenciar residências atendidas e não atendidas;
+- destacar as conexões utilizadas;
+- atualizar as informações exibidas durante a execução;
+- apresentar dados gerais sobre o atendimento da comunidade.
 
-As cores dos vértices ajudam a entender rapidamente a situação da rede:
+As cores dos vértices ajudam a identificar a situação da rede:
 
-- **Azul:** fonte de energia.
-- **Verde:** residência atendida.
-- **Amarelo:** situação de atendimento parcial, quando representada pela visualização.
-- **Vermelho:** residência sem energia.
+- **azul:** fonte de energia;
+- **verde:** residência atendida;
+- **vermelho:** residência sem energia.
 
 A visualização é atualizada sem precisar reconstruir todo o grafo a cada rodada, mantendo as posições dos vértices e alterando as informações visuais conforme os resultados da distribuição.
 
@@ -350,18 +424,19 @@ O arquivo `main.py` é responsável por conectar todas as partes do projeto.
 
 Suas responsabilidades incluem:
 
-- Criar o banco de baterias.
-- Definir a quantidade de residências.
-- Construir a comunidade.
-- Gerar o grafo.
-- Inicializar o painel solar.
-- Criar o serviço de distribuição.
-- Inicializar a visualização gráfica.
-- Controlar o modo de simulação.
-- Atualizar a distribuição e a visualização durante a execução.
-- Encerrar os processos quando a simulação termina.
+- criar o banco de baterias;
+- definir a quantidade de residências;
+- construir a comunidade;
+- gerar o grafo;
+- inicializar o painel solar;
+- criar o serviço de distribuição;
+- inicializar a visualização gráfica;
+- controlar o modo de simulação;
+- atualizar a distribuição e a visualização;
+- controlar o tempo real e o tempo simulado;
+- encerrar os processos quando a simulação termina.
 
-O `main.py` não concentra os cálculos de geração, armazenamento ou distribuição. Ele apenas coordena as classes responsáveis por cada atividade.
+O `main.py` não concentra os cálculos de geração, armazenamento ou distribuição. Ele coordena as classes responsáveis por cada atividade.
 
 ---
 
@@ -373,21 +448,36 @@ No modo normal, o painel solar permanece ativo e produz energia de acordo com as
 
 Enquanto isso, as residências continuam consumindo energia, e o serviço de distribuição administra o fornecimento conforme a disponibilidade do banco de baterias.
 
-Isso permite acompanhar como a geração e o consumo influenciam o atendimento da comunidade.
+O cálculo utiliza o tempo realmente transcorrido entre duas rodadas de distribuição, evitando que o consumo dependa da velocidade do computador.
 
 ### Simulação noturna
 
 A simulação noturna representa um período em que não existe geração solar.
 
-Nesse cenário, o fornecimento depende da energia que foi armazenada anteriormente nas baterias.
+Nesse cenário, o fornecimento depende exclusivamente da energia armazenada anteriormente nas baterias.
 
-O modo utiliza um período simulado de 12 horas, permitindo observar como o sistema se comporta quando precisa trabalhar somente com suas reservas.
+O modo representa 12 horas simuladas em aproximadamente 120 segundos reais.
+
+O intervalo de consumo é calculado de acordo com o tempo transcorrido e com a escala da simulação:
+
+```python
+NIGHT_TIME_SCALE = (
+    NIGHT_HOURS * 3600 / NIGHT_DURATION_SECONDS
+)
+```
+
+Dessa forma, a quantidade de iterações executadas não altera a duração simulada.
 
 ### Distribuição baseada em grafos
 
 A energia não é simplesmente dividida entre as casas.
 
-O algoritmo considera os caminhos disponíveis e a capacidade das conexões para determinar quais residências podem receber energia.
+O algoritmo considera:
+
+- os caminhos disponíveis;
+- a capacidade restante das conexões;
+- a demanda de cada residência;
+- a energia disponível no banco.
 
 Isso permite testar diferentes organizações da rede e observar como a conectividade influencia o resultado.
 
@@ -397,19 +487,18 @@ Durante a execução, o Matplotlib apresenta a rede e atualiza as informações 
 
 É possível acompanhar:
 
-- Quantas casas estão sendo atendidas.
-- Quantas residências estão sem energia.
-- Quais conexões estão sendo utilizadas.
-- Quanto de energia foi distribuído.
-- Quanto ainda está armazenado nas baterias.
+- quantas casas estão sendo atendidas;
+- quantas residências estão sem energia;
+- quais conexões estão sendo utilizadas;
+- quanto de energia foi distribuído;
+- quanto ainda está armazenado nas baterias;
+- o tempo decorrido da simulação.
 
 ---
 
 ## Como modificar a simulação
 
 As configurações principais ficam no arquivo `src/main.py`.
-
-Alguns parâmetros que podem ser alterados:
 
 | Configuração | O que modifica |
 |---|---|
@@ -418,6 +507,7 @@ Alguns parâmetros que podem ser alterados:
 | `EDGE_CAPACITY_W` | Capacidade padrão de transmissão das conexões. |
 | `NIGHT_HOURS` | Duração do período noturno simulado. |
 | `NIGHT_DURATION_SECONDS` | Tempo real utilizado para executar a simulação noturna. |
+| `NIGHT_TIME_SCALE` | Relação entre segundos reais e segundos simulados. |
 
 ### Alterando a quantidade de baterias
 
@@ -431,9 +521,7 @@ Nesse exemplo, o banco possui capacidade total de 500 Wh.
 
 ### Alterando a quantidade de residências
 
-A quantidade de casas é definida durante a criação da comunidade.
-
-Exemplo:
+A quantidade de casas é definida pela constante:
 
 ```python
 NUMBER_OF_HOMES = 30
@@ -459,21 +547,27 @@ Aumentá-lo permite analisar como uma rede com conexões de maior capacidade se 
 
 ### Requisitos
 
-- Python 3.10 ou superior.
-- pip.
-- NetworkX.
-- Matplotlib.
+- Python 3.10 ou superior;
+- pip;
+- Git.
+
+As dependências Python estão declaradas no arquivo `requirements.txt`:
+
+```text
+networkx==3.7
+matplotlib==3.11.2
+```
 
 ### Clonando o repositório
 
 ```bash
-git clone <URL_DO_REPOSITORIO>
+git clone https://github.com/PedroMarchese01/Dynamic_Gs.git
 ```
 
 Entre na pasta:
 
 ```bash
-cd Dynnamic_GS
+cd Dynamic_Gs
 ```
 
 ### Criando o ambiente virtual
@@ -484,11 +578,11 @@ python -m venv .venv
 
 No Windows:
 
-```bash
+```powershell
 .venv\Scripts\activate
 ```
 
-No Linux:
+No Linux ou macOS:
 
 ```bash
 source .venv/bin/activate
@@ -497,7 +591,7 @@ source .venv/bin/activate
 ### Instalando as dependências
 
 ```bash
-pip install networkx matplotlib
+python -m pip install -r requirements.txt
 ```
 
 ### Executando
@@ -508,7 +602,14 @@ Na raiz do projeto:
 python -m src.main
 ```
 
-O arquivo principal inicializará os componentes e apresentará as opções de simulação disponíveis.
+O arquivo principal apresentará duas opções:
+
+```text
+1 - Simulação normal
+2 - Simular uma noite (12 horas)
+```
+
+No PyCharm, caso o gráfico seja aberto somente na ferramenta **Plots** e a execução seja encerrada imediatamente, desative a opção **Show plots in tool window** nas configurações de gráficos do Python. Assim, o Matplotlib utilizará uma janela interativa separada.
 
 ---
 
@@ -519,7 +620,7 @@ O arquivo principal inicializará os componentes e apresentará as opções de s
 | Python | Desenvolvimento da lógica e dos modelos. |
 | NetworkX | Criação, manipulação e busca de caminhos nos grafos. |
 | Matplotlib | Visualização e atualização gráfica da rede. |
-| Threading | Execução simultânea da geração e do restante da simulação. |
+| Threading | Execução simultânea da geração solar. |
 | Git | Controle de versão do projeto. |
 
 ## CitizenTech e impacto social
@@ -530,18 +631,31 @@ A eletricidade permite estudar durante a noite, conservar alimentos, utilizar eq
 
 Pensando nisso, queremos explorar como uma rede de distribuição bem organizada pode aproveitar melhor a energia disponível.
 
-O Dynnamic_GS utiliza a computação para estudar esse problema, simulando uma comunidade, suas conexões e suas necessidades energéticas.
+O Dynamic_GS utiliza a computação para estudar esse problema, simulando uma comunidade, suas conexões e suas necessidades energéticas.
 
 A intenção é buscar estratégias que ajudem a levar energia ao maior número possível de residências, considerando que os recursos e a infraestrutura podem ser limitados.
 
+O projeto é uma simulação acadêmica. Ele não substitui análises técnicas de engenharia elétrica nem deve ser utilizado diretamente para controlar uma rede real.
+
 ## Considerações finais
 
-O Dynnamic_GS é uma forma de trabalhar um problema real por meio da programação e da teoria dos grafos.
+O Dynamic_GS é uma forma de trabalhar um problema relacionado à CitizenTech por meio da programação e da teoria dos grafos.
 
 Ao representar as residências como vértices e as conexões como arestas, conseguimos estudar como a organização da rede interfere na distribuição de energia.
 
 Nosso foco é entender como aproveitar melhor os recursos disponíveis e encontrar maneiras de atender mais casas, principalmente em comunidades ribeirinhas que enfrentam dificuldades de acesso à eletricidade.
 
-**FIAP — Global Solution | CitizenTech**
+O projeto demonstra:
 
-**Dynnamic_GS**
+- utilização de grafos;
+- busca de caminhos;
+- controle de capacidade residual;
+- estratégia gulosa de priorização;
+- análise de eficiência;
+- geração e armazenamento de energia;
+- simulação temporal;
+- visualização em tempo real.
+
+---
+
+**FIAP — Global Solution | CitizenTech**
