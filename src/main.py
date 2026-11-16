@@ -1,16 +1,10 @@
-
 from time import sleep, time
 
-from src.models.battery_bank import BaterryBank
-from src.models.solar_painel import SolarPainel
-from src.factory.village_factory import VillageFac
+from src.factory.village_factory import VillageFactory
+from src.models.battery_bank import BatteryBank
+from src.models.solar_panel import SolarPanel
 from src.service.energy_distribution import EnergyDistribution
 from src.service.live_village_view import LiveVillageView
-
-
-# =====================================
-# CONFIGURAÇÕES
-# =====================================
 
 NUMBER_OF_BATTERIES = 10
 NUMBER_OF_HOMES = 30
@@ -18,20 +12,15 @@ NUMBER_OF_HOMES = 30
 NIGHT_HOURS = 12
 NIGHT_DURATION_SECONDS = 120
 
-# 12 horas simuladas em 120 segundos reais.
-NIGHT_STEP_SECONDS = (
-    NIGHT_HOURS * 3600 / NIGHT_DURATION_SECONDS
+# Quantos segundos simulados correspondem a um segundo real.
+NIGHT_TIME_SCALE = (
+        NIGHT_HOURS * 3600 / NIGHT_DURATION_SECONDS
 )
 
 EDGE_CAPACITY_W = 1000
 
 
-# =====================================
-# FUNÇÕES AUXILIARES
-# =====================================
-
 def show_final_result(battery_bank, homes):
-
     attended = sum(
         1 for home in homes
         if getattr(home, "is_attended", False)
@@ -59,12 +48,7 @@ def show_final_result(battery_bank, homes):
     print("=" * 45)
 
 
-# =====================================
-# MAIN
-# =====================================
-
 def main():
-
     print("=" * 45)
     print("       SISTEMA DE DISTRIBUIÇÃO DE ENERGIA")
     print("=" * 45)
@@ -86,7 +70,7 @@ def main():
     # BANCO DE BATERIAS
     # =====================================
 
-    battery_bank = BaterryBank()
+    battery_bank = BatteryBank()
 
     battery_bank.append_battery(
         NUMBER_OF_BATTERIES
@@ -94,7 +78,6 @@ def main():
 
     # Na simulação noturna, começa com 100%.
     if night_mode:
-
         battery_bank.charge(
             battery_bank.get_total_capacity()
         )
@@ -103,7 +86,7 @@ def main():
     # PAINEL SOLAR
     # =====================================
 
-    solar_panel = SolarPainel(
+    solar_panel = SolarPanel(
         battery_bank,
         percent_initial_lighting=80
     )
@@ -112,7 +95,7 @@ def main():
     # CRIAÇÃO DA VILA
     # =====================================
 
-    village = VillageFac(battery_bank)
+    village = VillageFactory(battery_bank)
 
     village.append_number_of_home(
         NUMBER_OF_HOMES
@@ -122,7 +105,6 @@ def main():
 
     # Define o consumo inicial das casas.
     for i, home in enumerate(homes):
-
         home.set_electricity_consumption(
             2 + (i % 9)
         )
@@ -182,6 +164,7 @@ def main():
     last_consumption_update = start_time
 
     last_console_update = start_time
+    last_distribution_update = start_time
 
     # Guarda o resultado da última distribuição.
     result = {
@@ -201,12 +184,17 @@ def main():
 
             elapsed_real = current_time - start_time
 
+            elapsed_since_distribution = (
+                    current_time - last_distribution_update
+            )
+
+            last_distribution_update = current_time
+
             # =====================================
             # ATUALIZAÇÃO DO CONSUMO
             # =====================================
 
             if current_time - last_consumption_update >= 5:
-
                 village.update_consumptions()
 
                 last_consumption_update = current_time
@@ -217,9 +205,13 @@ def main():
 
             if night_mode:
 
-                interval_seconds = NIGHT_STEP_SECONDS
+                interval_seconds = (
+                        elapsed_since_distribution
+                        * NIGHT_TIME_SCALE
+                )
 
-                simulated_hours = (
+                simulated_hours = min(
+                    NIGHT_HOURS,
                     elapsed_real
                     * NIGHT_HOURS
                     / NIGHT_DURATION_SECONDS
@@ -227,11 +219,8 @@ def main():
 
             else:
 
-                interval_seconds = 1
-
-                simulated_hours = (
-                    elapsed_real / 3600
-                )
+                interval_seconds = elapsed_since_distribution
+                simulated_hours = elapsed_real / 3600
 
             # =====================================
             # DISTRIBUIÇÃO PELO GRAFO
@@ -241,10 +230,6 @@ def main():
                 interval_seconds=interval_seconds
             )
 
-            # =====================================
-            # ATUALIZAÇÃO VISUAL
-            # =====================================
-
             viewer.update(
                 result,
                 battery_bank,
@@ -252,19 +237,18 @@ def main():
                 simulated_hours
             )
 
-            # =====================================
-            # INFORMAÇÕES NO TERMINAL
-            # =====================================
-
             if current_time - last_console_update >= 2:
-
-                print(
-                    f"\rCasas atendidas: "
+                status_line = (
+                    f"Casas atendidas: "
                     f"{result['attended']}/{result['total_homes']} | "
                     f"Bateria: "
                     f"{battery_bank.get_batteries_level():.2f}% | "
                     f"Energia: "
-                    f"{battery_bank.get_available_energy():.2f} Wh",
+                    f"{battery_bank.get_available_energy():.2f} Wh"
+                )
+
+                print(
+                    f"\r{status_line:<100}",
                     end="",
                     flush=True
                 )
@@ -275,18 +259,12 @@ def main():
             # ENCERRAMENTO DA SIMULAÇÃO NOTURNA
             # =====================================
 
-            if night_mode:
-
-                progress = min(
-                    100,
-                    (elapsed_real / NIGHT_DURATION_SECONDS) * 100
-                )
-
-                if elapsed_real >= NIGHT_DURATION_SECONDS:
-
-                    print("\n\nAs 12 horas foram concluídas.")
-
-                    break
+            if (
+                    night_mode
+                    and elapsed_real >= NIGHT_DURATION_SECONDS
+            ):
+                print("\n\nAs 12 horas foram concluídas.")
+                break
 
             sleep(0.15)
 

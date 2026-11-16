@@ -1,12 +1,12 @@
 
 from src.factory import graph_village_factory
 from src.models.homes import Home
-from src.models.battery_bank import BaterryBank
+from src.models.battery_bank import BatteryBank
 
 
-class VillageFac:
+class VillageFactory:
 
-    def __init__(self, battery: BaterryBank):
+    def __init__(self, battery: BatteryBank):
 
         self.battery = battery
         self.village = []

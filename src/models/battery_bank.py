@@ -4,7 +4,7 @@ import threading
 from src.models.battery import Battery
 
 
-class BaterryBank:
+class BatteryBank:
 
     def __init__(self):
         self.power = []
