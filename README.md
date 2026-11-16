@@ -14,6 +14,24 @@
 | Jonas Esteves | 564143 |
 | Vitor Tigre | 561746 |
 
+## Ficha da CitizenTech
+
+| Campo | Definição |
+|---|---|
+| **Nome da CitizenTech** | Estação Ribeirinha — Distribuição Inteligente de Energia |
+| **Cidade e bairro / território** | Comunidades ribeirinhas da Amazônia, representadas na simulação por uma rede de residências conectadas. |
+| **Cidadãos beneficiados** | Moradores de comunidades ribeirinhas, lideranças comunitárias e responsáveis pelo planejamento da infraestrutura energética local. |
+| **Problema** | A geração e o armazenamento de energia podem ser limitados, tornando necessário estudar como distribuir a energia disponível para atender o maior número possível de residências. |
+| **Como funciona** | As residências e conexões da comunidade são representadas por um grafo. O sistema simula geração solar, armazenamento em baterias, demanda energética e distribuição por caminhos que ainda possuem capacidade disponível. |
+| **O que cada parte faz** | Os modelos representam baterias, residências e o painel solar; a fábrica constrói a comunidade e o grafo; o serviço de distribuição seleciona os caminhos e administra a energia; a visualização apresenta o atendimento em tempo real. |
+| **Indicadores de impacto** | Quantidade de residências atendidas, energia distribuída, energia restante nas baterias, conexões utilizadas e continuidade do atendimento durante o período simulado. |
+| **ODS relacionados** | ODS 7 — Energia Acessível e Limpa; ODS 10 — Redução das Desigualdades; ODS 11 — Cidades e Comunidades Sustentáveis; ODS 13 — Ação Contra a Mudança Global do Clima. |
+| **Repositório** | [github.com/PedroMarchese01/Dynamic_Gs](https://github.com/PedroMarchese01/Dynamic_Gs) |
+
+> O projeto é uma simulação acadêmica com dados e parâmetros demonstrativos. Os resultados não substituem estudos de engenharia elétrica nem devem ser utilizados diretamente para controlar uma rede real.
+
+---
+
 ## Sobre o projeto
 
 O Dynamic_GS surgiu de uma preocupação com a realidade de comunidades ribeirinhas da Amazônia, onde o acesso à energia elétrica ainda pode ser limitado e manter um fornecimento constante é um grande desafio.
@@ -635,8 +653,6 @@ O Dynamic_GS utiliza a computação para estudar esse problema, simulando uma co
 
 A intenção é buscar estratégias que ajudem a levar energia ao maior número possível de residências, considerando que os recursos e a infraestrutura podem ser limitados.
 
-O projeto é uma simulação acadêmica. Ele não substitui análises técnicas de engenharia elétrica nem deve ser utilizado diretamente para controlar uma rede real.
-
 ## Considerações finais
 
 O Dynamic_GS é uma forma de trabalhar um problema relacionado à CitizenTech por meio da programação e da teoria dos grafos.
@@ -659,3 +675,5 @@ O projeto demonstra:
 ---
 
 **FIAP — Global Solution | CitizenTech**
+
+**Dynamic_GS**
